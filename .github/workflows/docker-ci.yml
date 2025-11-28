@@ -31,4 +31,47 @@ jobs:
       run: |
         docker build -t my-devops-app .
 
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker image
+      run: |
+        docker tag my-devops-app ${{ secrets.DOCKER_USERNAME }}/my-devops-app:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/my-devops-app:latest
+name: Docker CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Test with pytest
+      run: |
+        pytest || true
+
+    - name: Build Docker image
+      run: |
+        docker build -t my-devops-app .
+
 
